@@ -1,0 +1,103 @@
+# W3C Solid Community Group: Authentication Panel
+
+* Date: 2022-03-28T14:00:00Z
+* Call: https://meet.jit.si/solid-authentication
+* Chat: https://gitter.im/solid/authentication-panel
+* Repository: https://github.com/solid/authentication-panel
+
+
+## Present
+* Aaron Coburn
+* Nicolas AS
+* e Pavlik
+* jaxoncreed (JC)
+
+---
+
+## Announcements
+
+### Meeting Recordings and Transcripts
+* No audio or video recording, or automated transcripts without consent. Meetings are transcribed and made public. If consent is withheld by anyone, recording/retention must not occur.
+* Use panel chat and repository. Queue in call to talk.
+
+
+### Participation and Code of Conduct
+* [Join the W3C Solid Community Group](https://www.w3.org/community/solid/join), [W3C Account Request](http://www.w3.org/accounts/request), [W3C Community Contributor License Agreement](https://www.w3.org/community/about/agreements/cla/)
+* [Solid Code of Conduct](https://github.com/solid/process/blob/master/code-of-conduct.md), [Positive Work Environment at W3C: Code of Ethics and Professional Conduct](https://github.com/solid/process/blob/master/code-of-conduct.md)
+* If this is your first time, welcome! please introduce yourself.
+
+
+### Scribes
+* Nicolas AS
+
+
+---
+
+## Agenda
+
+### Pull Requests
+https://github.com/solid/solid-oidc/pulls
+
+* 
+
+### Issues
+https://github.com/solid/solid-oidc/issues
+
+* Community Group Draft Publication
+
+
+## Minutes
+
+### Community Group Draft Publication
+
+Proposal for discussion and vote
+
+* Proposal: To approve publishing the current Solid-OIDC Editors Draft as a Community Group Draft. The Community Group Draft will be distinct from the Editors Draft and will be a more stable document as the panel prepares Solid-OIDC for the Community Group Report stage. Note that there is a distinction between FPWD and Community Group Draft Publication.
+* AC: There are two questions to settle before vote: (1) URL of the CGD vs URL of the Editor's draft, and (2) What would be the cadence/process from the Editor's draft to the CGD. The Editor's draft should be updated/published on each new commit. One option is to publish the CGD manually when we see fit, or to abolish any distinction between the CGD and Editor's draft at all.
+* eP: Calling the current Editor's draft CGD should be fine, but not sure how that would fit with the solidproject publication. Maybe we can use tags to handle this.
+* AC: +1. If the Editor's draft becomes the CGD, that's logistically very simple. Adding a GH action to push it to the solidproject.org should be possible. There is a spectrum from 100% automated to 100% manual, but we can figure this out as we go.
+* eP: Then we can take action now to move from editor's draft to CGD
+* eP: Jackson, you had questions on Gitter, do you want to share them here ?
+* JC: The answers on Gitter were quite clear. The questions were around the architectural change towards the OP not issuing an Access Token anymore. Does the current spec mention the scope of the issued access token ? 
+* AC: Scopes are not very well defined currently, and should be more clearly specified. The question is what scope the access token should have wrt to the storage server that issued it.
+* JC: I don't mean OAuth/OIDC scopes. Just where this access token can be used, with regards to subdomains and paths.
+* AC: The easy answer to that is: it's out of scope for Solid-OIDC. This is about AuthZ, not AuthN. You could have an entire realm for which an access token is valid, or capability-based access... It's the AuthZ server that the RS is connected to which is going to be authoritative there.
+* JC: That makes sense. Clients will have to follow their noses on 401 responses
+* AC: Absolutely. Using the WWW-Authenticate header is going to be key on how the client should authenticate to a given RS (and associated AuthZ server)
+* JC: Let's say I'm the RS, and I receive an auth token that's valid for a different RS. Should I reply a 401 or a 403 ?
+* eP: We could create an issue to capture this discussion, because the question around realms has some subtelty.
+* AC: There are some things to consider. If the server supports UMA, there is iterative communication between AS and client to figure out what claims should be pushed to access a given resource. The interaction between the AS, the client and the RS is more explicit. About 401 vs 403: 403 means "you have a correct access token, but it doesn't give you sufficient access to perform what you wanted to". In Solid, the scopes aren't very much leveraged, the client cannot use them to figure out the access it gives them, based on the scopes in token response. What we don't want is following up a 403 by an unauth fetch to get a 401 and then authenticate each time. This points to the notion of wallet, e.g. as described by CHAPI. This is something that is going to be discussed in the authz panel too.
+* JC: Wouldn't it make this protocol too chatty ?
+* AC: It would increase chattiness a bit initially, but the requests will be lighter wheight, and HTTP2 will also limit the overhead.
+* JC: Is this being built into the client libraries at Inrupt ?
+* AC: Yes, but I don't know with which time frame.
+* eP: There is a Community Server issue where this is discussed. For the chattiness, you'll have to exchange the ID token with each resource server you're talking to.
+* JC: That does make the client a bit more complicated, because the access tokens must be cached, and indexed
+* AC: That's where wallets come into play. So far, relying on a single access token has made things easy, but when there are multiple, you don't know how many you'll have, so you need to manage them cleanly, which is why CHAPI could be interesting.
+* eP: Nicolas how about TS implementation you work on?
+* NAS: We were talking last week about chapi and integrate it in solid-authn
+* eP: roughly when do you think it would be available
+* NAS: We are still in design stage, i would prefer not to do estimates
+* AC: This would be a fairly significant change, so we want top roll out it incrementally, to first support both the global access tokens and the scoped ones for a while, before gradually stopping relying on the global ones.
+* JC: I am applying to a grant (NLnet) to implement the client credential flow. Does it make sense to implement it for the current version, or does it make sense to build it for the new version ?
+* AC: Considering the new pattern would be best
+* eP: Do you have an idea when you'd deliver that ?
+* JC: Probably in the next 6 months. we were talking about webhooks authentication in the notifications panel, where client credentials could be used.
+* eP: Please do keep us updated, we are looking into client credentials as well, using public/private keys
+* JC: Isn't that a different flow ?
+* eP: It's called client assertion flow.
+* JC: Right; I may look into that as well. The client credential would be tied to an identity, there would be no delegated identity in this case.
+* eP: It would be great to support both delegated and bot acting on its own behalf use cases.
+* AC: Are there additional considerations before moving on to the vote on the topic at hand ?
+
+* Proposal: To approve publishing the current Solid-OIDC Editors Draft as a Community Group Draft. The Community Group Draft will be published as part of the Solid Project Technical report documents. 
+
+* NAS: +1
+* eP: +1
+* AC: +1
+* JC: +1
+
+ACTION: AC - make changes to publish as a CG-Draft and publish under SolidProject TR/ area
+
+* eP: Should we check with Dmitri if he still wants to be listed as an editor ?
+* AC: I'll check in with him.
